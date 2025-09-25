@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Electrical Converter & Problem Solvers — Safari Single File</title>
+  <title>Electrical Converter & Problem Solvers — Expanded Formulas</title>
   <style>
     :root{ --bg:#0b0c10; --panel:#12151c; --muted:#2a2f3a; --accent:#4fd1c5; --text:#e8edf3; --sub:#9aa5b1; --ok:#4ade80; --bad:#ff6b6b; --r:18px; --sh:0 10px 30px rgba(0,0,0,.35); }
     *{box-sizing:border-box}
@@ -139,45 +139,54 @@
         <button class="collapse-toggle" id="refToggle"><span class="chev">▾</span> Collapse / Expand</button>
       </div>
       <div class="bd">
-        <div class="pill" style="margin-bottom:10px">Symbol legend</div>
         <details>
-  <summary>Symbol Legend</summary>
-  <table id="legend">
-          <tr><th>Symbol</th><th>Meaning (Unit)</th></tr>
-          <tr><td class="mono">V</td><td>Voltage (volt, V)</td></tr>
-          <tr><td class="mono">I</td><td>Current (ampere, A)</td></tr>
-          <tr><td class="mono">R</td><td>Resistance (ohm, Ω)</td></tr>
-          <tr><td class="mono">P</td><td>Power (watt, W)</td></tr>
-          <tr><td class="mono">W</td><td>Work (joule, J)</td></tr>
-          <tr><td class="mono">E</td><td>Energy (joule, J)</td></tr>
-          <tr><td class="mono">Q</td><td>Charge (coulomb, C)</td></tr>
-          <tr><td class="mono">Q (reactive)</td><td>Reactive power (var)</td></tr>
-          <tr><td class="mono">S</td><td>Apparent power (volt‑ampere, VA)</td></tr>
-          <tr><td class="mono">Z</td><td>Impedance (ohm, Ω)</td></tr>
-          <tr><td class="mono">X</td><td>Reactance (ohm, Ω) — <span class="mono">X<sub>C</sub></span>, <span class="mono">X<sub>L</sub></span></td></tr>
-          <tr><td class="mono">C</td><td>Capacitance (farad, F)</td></tr>
-          <tr><td class="mono">L</td><td>Inductance (henry, H)</td></tr>
-          <tr><td class="mono">f</td><td>Frequency (hertz, Hz)</td></tr>
-          <tr><td class="mono">T</td><td>Period (second, s)</td></tr>
-          <tr><td class="mono">ω</td><td>Angular frequency (rad/s)</td></tr>
-          <tr><td class="mono">φ</td><td>Phase angle (degrees)</td></tr>
-        </table>
-</details>
+          <summary>Symbol Legend</summary>
+          <table id="legend">
+            <tr><th>Symbol</th><th>Meaning (Unit)</th></tr>
+            <tr><td class="mono">V</td><td>Voltage (volt, V)</td></tr>
+            <tr><td class="mono">I</td><td>Current (ampere, A)</td></tr>
+            <tr><td class="mono">R</td><td>Resistance (ohm, Ω)</td></tr>
+            <tr><td class="mono">P</td><td>Power (watt, W)</td></tr>
+            <tr><td class="mono">W</td><td>Work (joule, J)</td></tr>
+            <tr><td class="mono">E</td><td>Energy (joule, J)</td></tr>
+            <tr><td class="mono">Q</td><td>Charge (coulomb, C)</td></tr>
+            <tr><td class="mono">Q (reactive)</td><td>Reactive power (var)</td></tr>
+            <tr><td class="mono">S</td><td>Apparent power (volt‑ampere, VA)</td></tr>
+            <tr><td class="mono">Z</td><td>Impedance (ohm, Ω)</td></tr>
+            <tr><td class="mono">X</td><td>Reactance (ohm, Ω) — <span class="mono">X<sub>C</sub></span>, <span class="mono">X<sub>L</sub></span></td></tr>
+            <tr><td class="mono">C</td><td>Capacitance (farad, F)</td></tr>
+            <tr><td class="mono">L</td><td>Inductance (henry, H)</td></tr>
+            <tr><td class="mono">f</td><td>Frequency (hertz, Hz)</td></tr>
+            <tr><td class="mono">T</td><td>Period (second, s)</td></tr>
+            <tr><td class="mono">ω</td><td>Angular frequency (rad/s)</td></tr>
+            <tr><td class="mono">φ</td><td>Phase angle (degrees)</td></tr>
+            <tr><td class="mono">m</td><td>Mass (kg)</td></tr>
+            <tr><td class="mono">a</td><td>Acceleration (m/s²)</td></tr>
+            <tr><td class="mono">v</td><td>Velocity (m/s)</td></tr>
+            <tr><td class="mono">h</td><td>Height (m)</td></tr>
+            <tr><td class="mono">g</td><td>Gravitational acceleration (~9.81 m/s²)</td></tr>
+            <tr><td class="mono">k</td><td>Spring constant (N/m)</td></tr>
+            <tr><td class="mono">x</td><td>Displacement (m)</td></tr>
+            <tr><td class="mono">n</td><td>Number of electrons (count)</td></tr>
+            <tr><td class="mono">e</td><td>Elementary charge (~1.602×10⁻¹⁹ C)</td></tr>
+          </table>
+        </details>
         <details open style="margin-top:10px">
           <summary>Core DC & AC</summary>
           <ul>
             <li>Ohm’s law: <span class="mono">V = I·R</span>; AC: <span class="mono">V = I·Z</span></li>
             <li>Electrical power: <span class="mono">P = V·I = I²R = V²/R</span></li>
-            <li>Mechanical power: <span class="mono">P = W/t</span></li>
+            <li>Mechanical power: <span class="mono">P = W/t</span>, <span class="mono">P = F·v</span></li>
             <li>RMS (sine): <span class="mono">V<sub>rms</sub> = V<sub>p</sub>/√2</span>, <span class="mono">I<sub>rms</sub> = I<sub>p</sub>/√2</span></li>
           </ul>
         </details>
         <details>
           <summary>Work, Energy & Storage</summary>
           <ul>
-            <li>Work: <span class="mono">W = F·d</span></li>
-            <li>Energy: <span class="mono">E = P·t</span></li>
-            <li>Capacitor: <span class="mono">E = ½ C V²</span>; Inductor: <span class="mono">E = ½ L I²</span></li>
+            <li>Force: <span class="mono">F = m·a</span></li>
+            <li>Work: <span class="mono">W = F·d</span> (1 J = 1 N·m)</li>
+            <li>Potential: <span class="mono">PE = m·g·h</span>; Kinetic: <span class="mono">KE = ½·m·v²</span>; Strain: <span class="mono">E = ½·k·x²</span></li>
+            <li>Charge: <span class="mono">Q = I·t</span>; electrons: <span class="mono">Q = n·e</span> (e ≈ 1.602×10⁻¹⁹ C)</li>
           </ul>
         </details>
         <details>
@@ -354,9 +363,15 @@
     },
     'Work / Energy / Power': {
       formulas: {
-        'Work W = F·d': { inputs:[{k:'F',label:'Force F (N)'},{k:'d',label:'Displacement d (m)'}], solve: function({F,d}){ return {'W (J)': F*d}; } },
+        'Force F = m·a → F': { inputs:[{k:'m',label:'Mass m (kg)'},{k:'a',label:'Acceleration a (m/s²)'}], solve: function({m,a}){ return {'F (N)': m*a}; } },
+        'Acceleration a = F/m → a': { inputs:[{k:'F',label:'Force F (N)'},{k:'m',label:'Mass m (kg)'}], solve: function({F,m}){ return {'a (m/s²)': F/m}; } },
+        'Mass m = F/a → m': { inputs:[{k:'F',label:'Force F (N)'},{k:'a',label:'Acceleration a (m/s²)'}], solve: function({F,a}){ return {'m (kg)': F/a}; } },
+        'Work W = F·d': { inputs:[{k:'F',label:'Force F (N)'},{k:'d',label:'Distance d (m)'}], solve: function({F,d}){ return {'W (J)': F*d}; } },
         'Power P = W/t': { inputs:[{k:'W',label:'Work/Energy W (J)'},{k:'t',label:'Time t (s)'}], solve: function({W,t}){ return {'P (W)': W/t}; } },
-        'Energy E = P·t': { inputs:[{k:'P',label:'Power P (W)'},{k:'t',label:'Time t (s)'}], solve: function({P,t}){ return {'E (J)': P*t}; } }
+        'Power P = F·v': { inputs:[{k:'F',label:'Force F (N)'},{k:'v',label:'Velocity v (m/s)'}], solve: function({F,v}){ return {'P (W)': F*v}; } },
+        'Potential Energy PE = m·g·h': { inputs:[{k:'m',label:'Mass m (kg)'},{k:'g',label:'g (m/s²)'},{k:'h',label:'Height h (m)'}], solve: function({m,g,h}){ return {'PE (J)': m*g*h}; } },
+        'Kinetic Energy KE = ½·m·v²': { inputs:[{k:'m',label:'Mass m (kg)'},{k:'v',label:'Velocity v (m/s)'}], solve: function({m,v}){ return {'KE (J)': 0.5*m*v*v}; } },
+        'Strain Energy E = ½·k·x²': { inputs:[{k:'k',label:'Spring constant k (N/m)'},{k:'x',label:'Displacement x (m)'}], solve: function({k,x}){ return {'E (J)': 0.5*k*x*x}; } }
       }
     },
     'Energy Storage': {
@@ -389,6 +404,13 @@
         'C_parallel = Σ C_i': { inputs:[{k:'list',label:'C values (F), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); return {'C_eq (F)': arr.reduce(function(a,b){return a+b;},0)}; } },
         'L_series = Σ L_i': { inputs:[{k:'list',label:'L values (H), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); return {'L_eq (H)': arr.reduce(function(a,b){return a+b;},0)}; } },
         'L_parallel = (Σ 1/L_i)⁻¹': { inputs:[{k:'list',label:'L values (H), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); var inv=arr.reduce(function(a,b){return a+1/b;},0); return {'L_eq (H)': 1/inv}; } }
+      }
+    },
+    'Charge (Coulombs)': {
+      formulas: {
+        'Q = I·t': { inputs:[{k:'I',label:'Current I (A)'},{k:'t',label:'Time t (s)'}], solve: function({I,t}){ return {'Q (C)': I*t}; } },
+        'Electrons n = Q/e': { inputs:[{k:'Q',label:'Charge Q (C)'}], solve: function({Q}){ var e=1.602e-19; return {'n (electrons)': Q/e}; } },
+        'Q from n: Q = n·e': { inputs:[{k:'n',label:'Electrons n (count)'}], solve: function({n}){ var e=1.602e-19; return {'Q (C)': n*e}; } }
       }
     },
     'RF Power (dBm ↔ W)': {
@@ -500,6 +522,9 @@
 
     // Collapsible reference card
     (function attachCollapsible(){ var card=document.getElementById('refCard'); var btn=document.getElementById('refToggle'); if(card&&btn){ btn.addEventListener('click', function(){ card.classList.toggle('collapsed'); }); } })();
+
+    // SI table
+    buildSITable();
   });
   </script>
 </body>
