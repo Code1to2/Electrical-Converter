@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Electrical Converter & Problem Solvers — Safari Single File</title>
+  <style>
+    :root{ --bg:#0b0c10; --panel:#12151c; --muted:#2a2f3a; --accent:#4fd1c5; --text:#e8edf3; --sub:#9aa5b1; --ok:#4ade80; --bad:#ff6b6b; --r:18px; --sh:0 10px 30px rgba(0,0,0,.35); }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:linear-gradient(180deg,var(--bg),#0f1220 60%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+    .wrap{max-width:1200px;margin:24px auto;padding:0 16px}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+    h1{font-size:clamp(22px,3vw,28px);margin:0}
+    .badge{background:var(--muted);color:var(--sub);padding:6px 10px;border-radius:999px;font-size:12px}
+    .grid{display:grid;gap:16px}
+    @media(min-width:1000px){.grid{grid-template-columns:1fr 1fr}}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.07);border-radius:var(--r);box-shadow:var(--sh)}
+    .card h2{font-size:18px;margin:0 0 8px}
+    .hd{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid rgba(255,255,255,.06)}
+    .bd{padding:16px}
+    label{font-size:12px;color:var(--sub);display:block;margin:0 0 6px}
+    input,select,button{width:100%;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:#0f1220;color:var(--text);outline:none}
+    input::placeholder{color:#718096}
+    .row{display:grid;gap:12px}
+    @media(min-width:640px){.row{grid-template-columns:1fr 1fr}}
+    .row3{display:grid;gap:12px}
+    @media(min-width:840px){.row3{grid-template-columns:1fr 1fr 1fr}}
+    .result{font-size:20px;font-weight:600;padding:12px 14px;border-radius:12px;background:#0f1220;border:1px dashed rgba(255,255,255,.2)}
+    .pill{display:inline-flex;gap:6px;align-items:center;padding:8px 10px;border-radius:999px;background:#0f1220;border:1px solid rgba(255,255,255,.08);font-size:12px;color:var(--sub)}
+    .muted{color:var(--sub)}
+    .ok{color:var(--ok)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
+    th{color:#c8d0da;font-weight:600}
+    .kbd{font-family:ui-monospace,Menlo,monospace;background:#0f1220;border:1px solid rgba(255,255,255,.12);padding:2px 6px;border-radius:6px}
+    details{background:transparent;border:1px solid rgba(255,255,255,.08);padding:10px 12px;border-radius:12px}
+    summary{cursor:pointer;color:#dbe6f3;font-weight:600}
+    .footer{margin:20px 0;color:var(--sub);font-size:12px}
+    .btn{cursor:pointer;background:var(--accent);color:#003131;border:0;font-weight:700}
+    .btn:active{transform:translateY(1px)}
+    .mono{font-family:ui-monospace,Menlo,monospace}
+    .solver-row{display:grid;gap:10px}
+    @media(min-width:680px){.solver-row{grid-template-columns:1fr 1fr 1fr}}
+    /* Collapsible card */
+    .collapse-toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;border:0;background:transparent;color:var(--text);font-weight:700}
+    .chev{display:inline-block;transition:transform .2s ease}
+    .collapsed .bd{display:none}
+    .collapsed .chev{transform:rotate(-90deg)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Electrical Converter & Problem Solvers</h1>
+      <span class="badge">Offline • Safari‑friendly • Single file</span>
+    </header>
+
+    <div class="grid">
+      <!-- UNIVERSAL CONVERTER -->
+      <section class="card" id="converter">
+        <div class="hd">
+          <h2>Universal SI Converter</h2>
+          <span class="pill">Prefixes: zepto … zetta (10^−21 … 10^21)</span>
+        </div>
+        <div class="bd">
+          <div class="row3">
+            <div>
+              <label>Quantity</label>
+              <select id="qty"></select>
+            </div>
+            <div>
+              <label>From</label>
+              <div class="row">
+                <select id="fromPrefix" aria-label="From prefix"></select>
+                <select id="fromUnit" aria-label="From unit"></select>
+              </div>
+              <div class="muted mono" id="fromInfo" style="margin-top:6px"></div>
+            </div>
+            <div>
+              <label>To</label>
+              <div class="row">
+                <select id="toPrefix" aria-label="To prefix"></select>
+                <select id="toUnit" aria-label="To unit"></select>
+              </div>
+              <div class="muted mono" id="toInfo" style="margin-top:6px"></div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:12px">
+            <div>
+              <label>Value</label>
+              <input id="fromValue" type="number" placeholder="e.g. 10" inputmode="decimal" />
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-end">
+              <button class="btn" id="convertBtn">Convert</button>
+              <button id="swapBtn" title="Swap" style="width:auto" class="pill">⇄ Swap</button>
+              <button id="copyBtn" title="Copy" style="width:auto" class="pill">⧉ Copy</button>
+            </div>
+          </div>
+          <div style="margin-top:12px">
+            <div class="result" id="result">—</div>
+            <div class="muted" id="baseInfo" style="margin-top:8px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FORMULA PROBLEM SOLVERS -->
+      <section class="card" id="solvers">
+        <div class="hd">
+          <h2>Formula Problem Solvers</h2>
+          <span class="pill">Pick a category → choose a formula</span>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div>
+              <label>Category</label>
+              <select id="solverCategory"></select>
+            </div>
+            <div>
+              <label>Formula</label>
+              <select id="solverFormula"></select>
+            </div>
+          </div>
+          <div id="solverInputs" class="solver-row" style="margin-top:12px"></div>
+          <div style="display:flex;gap:12px;align-items:center;margin-top:12px">
+            <button class="btn" id="solveGeneric">Solve</button>
+            <button class="pill" id="clearGeneric" style="width:auto">Clear</button>
+            <div class="muted" id="solverHint"></div>
+          </div>
+          <div class="result" id="solverResult" style="margin-top:12px">—</div>
+        </div>
+      </section>
+    </div>
+
+    <!-- COLLAPSIBLE REFERENCE CARD -->
+    <section class="card" id="refCard">
+      <div class="hd">
+        <h2>Formula Reference (ENG1021 aligned)</h2>
+        <button class="collapse-toggle" id="refToggle"><span class="chev">▾</span> Collapse / Expand</button>
+      </div>
+      <div class="bd">
+        <div class="pill" style="margin-bottom:10px">Symbol legend</div>
+        <details>
+  <summary>Symbol Legend</summary>
+  <table id="legend">
+          <tr><th>Symbol</th><th>Meaning (Unit)</th></tr>
+          <tr><td class="mono">V</td><td>Voltage (volt, V)</td></tr>
+          <tr><td class="mono">I</td><td>Current (ampere, A)</td></tr>
+          <tr><td class="mono">R</td><td>Resistance (ohm, Ω)</td></tr>
+          <tr><td class="mono">P</td><td>Power (watt, W)</td></tr>
+          <tr><td class="mono">W</td><td>Work (joule, J)</td></tr>
+          <tr><td class="mono">E</td><td>Energy (joule, J)</td></tr>
+          <tr><td class="mono">Q</td><td>Charge (coulomb, C)</td></tr>
+          <tr><td class="mono">Q (reactive)</td><td>Reactive power (var)</td></tr>
+          <tr><td class="mono">S</td><td>Apparent power (volt‑ampere, VA)</td></tr>
+          <tr><td class="mono">Z</td><td>Impedance (ohm, Ω)</td></tr>
+          <tr><td class="mono">X</td><td>Reactance (ohm, Ω) — <span class="mono">X<sub>C</sub></span>, <span class="mono">X<sub>L</sub></span></td></tr>
+          <tr><td class="mono">C</td><td>Capacitance (farad, F)</td></tr>
+          <tr><td class="mono">L</td><td>Inductance (henry, H)</td></tr>
+          <tr><td class="mono">f</td><td>Frequency (hertz, Hz)</td></tr>
+          <tr><td class="mono">T</td><td>Period (second, s)</td></tr>
+          <tr><td class="mono">ω</td><td>Angular frequency (rad/s)</td></tr>
+          <tr><td class="mono">φ</td><td>Phase angle (degrees)</td></tr>
+        </table>
+</details>
+        <details open style="margin-top:10px">
+          <summary>Core DC & AC</summary>
+          <ul>
+            <li>Ohm’s law: <span class="mono">V = I·R</span>; AC: <span class="mono">V = I·Z</span></li>
+            <li>Electrical power: <span class="mono">P = V·I = I²R = V²/R</span></li>
+            <li>Mechanical power: <span class="mono">P = W/t</span></li>
+            <li>RMS (sine): <span class="mono">V<sub>rms</sub> = V<sub>p</sub>/√2</span>, <span class="mono">I<sub>rms</sub> = I<sub>p</sub>/√2</span></li>
+          </ul>
+        </details>
+        <details>
+          <summary>Work, Energy & Storage</summary>
+          <ul>
+            <li>Work: <span class="mono">W = F·d</span></li>
+            <li>Energy: <span class="mono">E = P·t</span></li>
+            <li>Capacitor: <span class="mono">E = ½ C V²</span>; Inductor: <span class="mono">E = ½ L I²</span></li>
+          </ul>
+        </details>
+        <details>
+          <summary>Reactance / Impedance / Phase</summary>
+          <ul>
+            <li><span class="mono">X<sub>C</sub> = 1/(2π f C)</span>, <span class="mono">X<sub>L</sub> = 2π f L</span></li>
+            <li>Series: <span class="mono">|Z| = √(R² + X²)</span>, <span class="mono">φ = tan⁻¹(X/R)</span></li>
+          </ul>
+        </details>
+        <details>
+          <summary>Filters & Frequencies</summary>
+          <ul>
+            <li>RC cutoff: <span class="mono">f<sub>c</sub> = 1/(2π R C)</span></li>
+            <li>RL cutoff: <span class="mono">f<sub>c</sub> = R/(2π L)</span></li>
+            <li>Twin‑T notch: <span class="mono">f<sub>N</sub> = 1/(4π R C)</span></li>
+            <li>Angular freq: <span class="mono">ω = 2π f</span></li>
+          </ul>
+        </details>
+        <details>
+          <summary>Series / Parallel</summary>
+          <ul>
+            <li>R series: <span class="mono">ΣR</span>; R parallel: <span class="mono">(Σ 1/R)⁻¹</span></li>
+            <li>C series: <span class="mono">(Σ 1/C)⁻¹</span>; C parallel: <span class="mono">ΣC</span></li>
+            <li>L series: <span class="mono">ΣL</span>; L parallel: <span class="mono">(Σ 1/L)⁻¹</span></li>
+          </ul>
+        </details>
+      </div>
+    </section>
+
+    <!-- SI TABLE at bottom, full width -->
+    <section class="card" id="siCard" style="margin-top:16px">
+      <div class="hd">
+        <h2>SI Prefix Table (zepto → zetta)</h2>
+        <span class="pill">10^−21 … 10^21</span>
+      </div>
+      <div class="bd">
+        <table id="siTable"></table>
+        <p class="muted" style="margin-top:8px">Example: <span class="kbd">10 MΩ</span> → <span class="kbd">10 × 10^6 Ω = 10,000,000 Ω</span></p>
+      </div>
+    </section>
+
+    <div class="footer">Tip: Add this page to your Home Screen in Safari for a one‑tap tool. Data is saved locally.</div>
+  </div>
+
+  <script>
+  // ===== SI DATA (restricted to zepto … zetta) =====
+  const PREFIXES = [
+    {sym:'z', name:'zepto',  exp:-21},
+    {sym:'a', name:'atto',   exp:-18},
+    {sym:'f', name:'femto',  exp:-15},
+    {sym:'p', name:'pico',   exp:-12},
+    {sym:'n', name:'nano',   exp:-9},
+    {sym:'µ', name:'micro',  exp:-6},
+    {sym:'m', name:'milli',  exp:-3},
+    {sym:'',  name:'(base)', exp:0},
+    {sym:'k', name:'kilo',   exp:3},
+    {sym:'M', name:'mega',   exp:6},
+    {sym:'G', name:'giga',   exp:9},
+    {sym:'T', name:'tera',   exp:12},
+    {sym:'P', name:'peta',   exp:15},
+    {sym:'E', name:'exa',    exp:18},
+    {sym:'Z', name:'zetta',  exp:21}
+  ];
+
+  // Quantities and canonical base units (SI)
+  const QUANTITIES = {
+    Resistance:{ unit:'Ω', allowPrefixes:true },
+    Conductance:{ unit:'S', allowPrefixes:true },
+    Capacitance:{ unit:'F', allowPrefixes:true },
+    Inductance:{ unit:'H', allowPrefixes:true },
+    Voltage:{ unit:'V', allowPrefixes:true },
+    Current:{ unit:'A', allowPrefixes:true },
+    Power:{ unit:'W', allowPrefixes:true },
+    Energy:{ unit:'J', allowPrefixes:true },
+    Charge:{ unit:'C', allowPrefixes:true },
+    Frequency:{ unit:'Hz', allowPrefixes:true },
+    Time:{ unit:'s', allowPrefixes:true },
+    Length:{ unit:'m', allowPrefixes:true }
+  };
+
+  // ===== HELPERS =====
+  const qs = sel => document.querySelector(sel);
+  const elQty = qs('#qty'), elFromP = qs('#fromPrefix'), elToP = qs('#toPrefix');
+  const elFromU = qs('#fromUnit'), elToU = qs('#toUnit');
+  const elVal = qs('#fromValue'), elBtn = qs('#convertBtn');
+  const elResult = qs('#result'), elBase = qs('#baseInfo');
+  const elFromInfo = qs('#fromInfo'), elToInfo = qs('#toInfo');
+
+  function numberFormat(x){
+    if (!isFinite(x)) return 'NaN';
+    const abs = Math.abs(x);
+    if (abs !== 0 && (abs < 1e-3 || abs >= 1e9)) return x.toExponential(6);
+    return x.toLocaleString(undefined,{maximumFractionDigits:9});
+  }
+  const pow10 = exp => Math.pow(10, exp);
+
+  function populateConverter(){
+    // Quantities
+    for(const k of Object.keys(QUANTITIES)){
+      const o=document.createElement('option'); o.value=k; o.textContent=k; elQty.appendChild(o);
+    }
+    // Prefixes (include 10^X in label)
+    for(const p of PREFIXES){
+      const label = `${p.sym || '—'} (${p.name}) — 10^${p.exp}`;
+      [elFromP, elToP].forEach(sel=>{ const o=document.createElement('option'); o.value=p.exp; o.textContent=label; sel.appendChild(o); });
+    }
+    // Defaults
+    elFromP.value = '0'; elToP.value = '0';
+    refreshUnits(); updatePrefixInfo();
+  }
+
+  function refreshUnits(){
+    const q = QUANTITIES[elQty.value];
+    [elFromU, elToU].forEach(sel=>{ sel.innerHTML=''; const o=document.createElement('option'); o.value=q.unit; o.textContent=q.unit; sel.appendChild(o); });
+    [elFromP, elToP].forEach(sel => sel.disabled = !q.allowPrefixes);
+  }
+
+  function updatePrefixInfo(){
+    const fp = getPrefix(parseInt(elFromP.value,10));
+    const tp = getPrefix(parseInt(elToP.value,10));
+    elFromInfo.textContent = `From factor: × 10^${fp.exp} (${fp.name}${fp.sym? ' – '+fp.sym : ''})`;
+    elToInfo.textContent   = `To factor: ÷ 10^${tp.exp} (${tp.name}${tp.sym? ' – '+tp.sym : ''})`;
+  }
+
+  function getPrefix(exp){ return PREFIXES.find(p=>p.exp===exp) || {sym:'',name:'(base)',exp:0}; }
+
+  function convert(){
+    const q = QUANTITIES[elQty.value];
+    const val = parseFloat(elVal.value);
+    if (isNaN(val)) { elResult.textContent = 'Enter a number'; elBase.textContent=''; return; }
+
+    const fromExp = parseInt(elFromP.value,10);
+    const toExp   = parseInt(elToP.value,10);
+    const fromUnit = elFromU.value; const toUnit = elToU.value;
+    if (fromUnit !== toUnit) { elResult.textContent = 'Incompatible units'; elBase.textContent=''; return; }
+
+    const baseValue = val * pow10(fromExp);
+    const out = baseValue / pow10(toExp);
+
+    const toSym = getPrefix(toExp).sym;
+    elResult.textContent = `${numberFormat(out)} ${toSym}${toUnit}`;
+    elBase.innerHTML = `Base: <span class="ok">${numberFormat(baseValue)} ${q.unit}</span> • Steps: (${val} × 10^${fromExp}) → base → (÷ 10^${toExp})`;
+
+    try{ localStorage.setItem('conv_state', JSON.stringify({qty:elQty.value,fromExp,toExp,fromUnit,toUnit,val})); }catch{}
+  }
+
+  function buildSITable(){
+    const tbl = qs('#siTable');
+    tbl.innerHTML = '<tr><th>Prefix</th><th>Symbol</th><th>10^</th><th>Factor</th></tr>' +
+      PREFIXES.map(p=>`<tr><td>${p.name}</td><td>${p.sym||'—'}</td><td>${p.exp}</td><td>10<sup>${p.exp}</sup></td></tr>`).join('');
+  }
+
+  function swap(){ const a = elFromP.value, b = elToP.value; elFromP.value = b; elToP.value = a; updatePrefixInfo(); convert(); }
+  function copyOut(){ const txt = `${elResult.textContent}  ( ${elBase.textContent.replace(/<[^>]+>/g,'')} )`; navigator.clipboard?.writeText(txt); }
+
+  // ===== GENERIC SOLVER ENGINE =====
+  const CATEGORY_DEFS = {
+    "Ohm's & DC Power": {
+      formulas: {
+        'V = I·R  → solve V': { inputs:[{k:'I',label:'Current I (A)'},{k:'R',label:'Resistance R (Ω)'}], solve: function({I,R}){ return {'V (V)': I*R}; } },
+        'I = V/R  → solve I': { inputs:[{k:'V',label:'Voltage V (V)'},{k:'R',label:'Resistance R (Ω)'}], solve: function({V,R}){ return {'I (A)': V/R}; } },
+        'R = V/I  → solve R': { inputs:[{k:'V',label:'Voltage V (V)'},{k:'I',label:'Current I (A)'}], solve: function({V,I}){ return {'R (Ω)': V/I}; } },
+        'P = V·I  → solve P': { inputs:[{k:'V',label:'Voltage V (V)'},{k:'I',label:'Current I (A)'}], solve: function({V,I}){ return {'P (W)': V*I}; } },
+        'P = V²/R → solve P': { inputs:[{k:'V',label:'Voltage V (V)'},{k:'R',label:'Resistance R (Ω)'}], solve: function({V,R}){ return {'P (W)': V*V/R}; } },
+        'P = I²R  → solve P': { inputs:[{k:'I',label:'Current I (A)'},{k:'R',label:'Resistance R (Ω)'}], solve: function({I,R}){ return {'P (W)': I*I*R}; } }
+      }
+    },
+    'AC Power (PF)': {
+      formulas: {
+        'Single‑phase: P,Q,S from V,I,PF': { inputs:[{k:'V',label:'Voltage V (V)'},{k:'I',label:'Current I (A)'},{k:'PF',label:'Power factor cosφ (0..1)'}], solve: function({V,I,PF}){ var S=V*I; var P=S*PF; var Q=S*Math.sqrt(Math.max(0,1-PF*PF)); var phi=Math.acos(Math.min(1,Math.max(-1,PF)))*180/Math.PI; return {'P (W)':P,'Q (var)':Q,'S (VA)':S,'φ (deg)':phi}; } },
+        'Three‑phase: P,Q,S from V_L,I_L,PF': { inputs:[{k:'VL',label:'Line voltage V_L (V)'},{k:'IL',label:'Line current I_L (A)'},{k:'PF',label:'Power factor cosφ (0..1)'}], solve: function({VL,IL,PF}){ var k=Math.sqrt(3); var S=k*VL*IL; var P=S*PF; var Q=S*Math.sqrt(Math.max(0,1-PF*PF)); var phi=Math.acos(Math.min(1,Math.max(-1,PF)))*180/Math.PI; return {'P (W)':P,'Q (var)':Q,'S (VA)':S,'φ (deg)':phi}; } },
+        'Given S and PF → P,Q,φ': { inputs:[{k:'S',label:'Apparent power S (VA)'},{k:'PF',label:'Power factor cosφ (0..1)'}], solve: function({S,PF}){ var P=S*PF; var Q=Math.sqrt(Math.max(0,S*S-P*P)); var phi=Math.acos(Math.min(1,Math.max(-1,PF)))*180/Math.PI; return {'P (W)':P,'Q (var)':Q,'φ (deg)':phi}; } }
+      }
+    },
+    'Work / Energy / Power': {
+      formulas: {
+        'Work W = F·d': { inputs:[{k:'F',label:'Force F (N)'},{k:'d',label:'Displacement d (m)'}], solve: function({F,d}){ return {'W (J)': F*d}; } },
+        'Power P = W/t': { inputs:[{k:'W',label:'Work/Energy W (J)'},{k:'t',label:'Time t (s)'}], solve: function({W,t}){ return {'P (W)': W/t}; } },
+        'Energy E = P·t': { inputs:[{k:'P',label:'Power P (W)'},{k:'t',label:'Time t (s)'}], solve: function({P,t}){ return {'E (J)': P*t}; } }
+      }
+    },
+    'Energy Storage': {
+      formulas: {
+        'Capacitor: E = ½ C V²': { inputs:[{k:'C',label:'Capacitance C (F)'},{k:'V',label:'Voltage V (V)'}], solve: function({C,V}){ return {'E (J)': 0.5*C*V*V}; } },
+        'Inductor: E = ½ L I²': { inputs:[{k:'L',label:'Inductance L (H)'},{k:'I',label:'Current I (A)'}], solve: function({L,I}){ return {'E (J)': 0.5*L*I*I}; } }
+      }
+    },
+    'Reactance / Z / Phase': {
+      formulas: {
+        'Xc = 1/(2π f C)': { inputs:[{k:'f',label:'Frequency f (Hz)'},{k:'C',label:'Capacitance C (F)'}], solve: function({f,C}){ return {'Xc (Ω)': 1/(2*Math.PI*f*C)}; } },
+        'Xl = 2π f L': { inputs:[{k:'f',label:'Frequency f (Hz)'},{k:'L',label:'Inductance L (H)'}], solve: function({f,L}){ return {'Xl (Ω)': 2*Math.PI*f*L}; } },
+        '|Z| & φ from R and X': { inputs:[{k:'R',label:'Resistance R (Ω)'},{k:'X',label:'Reactance X (Ω)'}], solve: function({R,X}){ return {'|Z| (Ω)': Math.sqrt(R*R+X*X), 'φ (deg)': (Math.atan2(X,R)*180/Math.PI)}; } }
+      }
+    },
+    'Filters & Freq': {
+      formulas: {
+        'RC cutoff f_c = 1/(2πRC)': { inputs:[{k:'R',label:'R (Ω)'},{k:'C',label:'C (F)'}], solve: function({R,C}){ return {'f_c (Hz)': 1/(2*Math.PI*R*C)}; } },
+        'RL cutoff f_c = R/(2πL)': { inputs:[{k:'R',label:'R (Ω)'},{k:'L',label:'L (H)'}], solve: function({R,L}){ return {'f_c (Hz)': R/(2*Math.PI*L)}; } },
+        'Twin‑T notch f_N = 1/(4πRC)': { inputs:[{k:'R',label:'R (Ω)'},{k:'C',label:'C (F)'}], solve: function({R,C}){ return {'f_N (Hz)': 1/(4*Math.PI*R*C)}; } },
+        'ω = 2π f': { inputs:[{k:'f',label:'Frequency f (Hz)'}], solve: function({f}){ return {'ω (rad/s)': 2*Math.PI*f}; } },
+        'f = ω/(2π)': { inputs:[{k:'w',label:'Angular frequency ω (rad/s)'}], solve: function({w}){ return {'f (Hz)': w/(2*Math.PI)}; } }
+      }
+    },
+    'Series / Parallel (R,C,L)': {
+      formulas: {
+        'R_series = Σ R_i': { inputs:[{k:'list',label:'R values (Ω), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); return {'R_eq (Ω)': arr.reduce(function(a,b){return a+b;},0)}; } },
+        'R_parallel = (Σ 1/R_i)⁻¹': { inputs:[{k:'list',label:'R values (Ω), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); var inv=arr.reduce(function(a,b){return a+1/b;},0); return {'R_eq (Ω)': 1/inv}; } },
+        'C_series = (Σ 1/C_i)⁻¹': { inputs:[{k:'list',label:'C values (F), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); var inv=arr.reduce(function(a,b){return a+1/b;},0); return {'C_eq (F)': 1/inv}; } },
+        'C_parallel = Σ C_i': { inputs:[{k:'list',label:'C values (F), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); return {'C_eq (F)': arr.reduce(function(a,b){return a+b;},0)}; } },
+        'L_series = Σ L_i': { inputs:[{k:'list',label:'L values (H), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); return {'L_eq (H)': arr.reduce(function(a,b){return a+b;},0)}; } },
+        'L_parallel = (Σ 1/L_i)⁻¹': { inputs:[{k:'list',label:'L values (H), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); var inv=arr.reduce(function(a,b){return a+1/b;},0); return {'L_eq (H)': 1/inv}; } }
+      }
+    },
+    'RF Power (dBm ↔ W)': {
+      formulas: {
+        'P(W) from dBm': { inputs:[{k:'dBm',label:'Power (dBm)'}], solve: function({dBm}){ return {'P (W)': Math.pow(10,(dBm-30)/10)}; } },
+        'dBm from P(W)': { inputs:[{k:'P',label:'Power P (W)'}], solve: function({P}){ return {'P (dBm)': 10*Math.log10(P)+30}; } }
+      }
+    },
+    'Energy & Cost (kWh)': {
+      formulas: {
+        'From P(W), hours, tariff, qty': { inputs:[{k:'P',label:'Power per device (W)'},{k:'h',label:'Hours of use (h)'},{k:'tariff',label:'Tariff (per kWh)'},{k:'qty',label:'Quantity'}], solve: function({P,h,tariff,qty}){ var kWh=(P*h*qty)/1000; var cost=kWh*tariff; return {'Energy (kWh)':kWh,'Cost':cost}; } },
+        'From P(kW), hours, tariff, qty': { inputs:[{k:'PkW',label:'Power per device (kW)'},{k:'h',label:'Hours of use (h)'},{k:'tariff',label:'Tariff (per kWh)'},{k:'qty',label:'Quantity'}], solve: function({PkW,h,tariff,qty}){ var kWh=(PkW*h*qty); var cost=kWh*tariff; return {'Energy (kWh)':kWh,'Cost':cost}; } }
+      }
+    }
+  };
+
+  function parseList(str){
+    if(!str) return [];
+    var norm = str.replace(/;/g, ',').replace(/\s+/g, ',').replace(/，/g, ',').trim();
+    var parts = norm.split(',').map(function(s){ return s.replace(',', '.'); });
+    var nums = parts.map(function(s){ return parseFloat(s); }).filter(function(x){ return !isNaN(x); });
+    return nums;
+  }
+
+  // Solver DOM
+  const elCat = qs('#solverCategory');
+  const elForm = qs('#solverFormula');
+  const elInputs = qs('#solverInputs');
+  const elSolve = qs('#solveGeneric');
+  const elClear = qs('#clearGeneric');
+  const elRes = qs('#solverResult');
+  const elHint = qs('#solverHint');
+
+  function populateSolverCategories(){
+    elCat.innerHTML = '';
+    Object.keys(CATEGORY_DEFS).forEach(function(cat){ var o=document.createElement('option'); o.value=cat; o.textContent=cat; elCat.appendChild(o); });
+    updateFormulaList();
+  }
+  function updateFormulaList(){
+    var cat = elCat.value;
+    var fset = CATEGORY_DEFS[cat].formulas;
+    elForm.innerHTML='';
+    Object.keys(fset).forEach(function(name){ var o=document.createElement('option'); o.value=name; o.textContent=name; elForm.appendChild(o); });
+    buildInputsForSelected();
+  }
+  function buildInputsForSelected(){
+    elInputs.innerHTML=''; elRes.textContent='—';
+    var cat = elCat.value;
+    var name = elForm.value;
+    var def = CATEGORY_DEFS[cat].formulas[name];
+    def.inputs.forEach(function(inp){
+      var w = document.createElement('div');
+      var id = 'in_'+inp.k;
+      var type = (inp.k === 'list') ? 'text' : 'number';
+      var placeholder = (inp.k === 'list') ? 'e.g. 10, 22, 47' : inp.k;
+      w.innerHTML = '<label for="'+id+'">'+inp.label+'</label>'+
+                    '<input id="'+id+'" type="'+type+'" inputmode="decimal" placeholder="'+placeholder+'" />';
+      elInputs.appendChild(w);
+    });
+    elHint.textContent = 'Tip: Lists accept commas, spaces, or semicolons. Decimal comma (3,3) is OK.';
+  }
+  function readInputs(){
+    var cat = elCat.value; var name = elForm.value; var def = CATEGORY_DEFS[cat].formulas[name];
+    var obj = {}; var invalid=false;
+    def.inputs.forEach(function(inp){
+      var raw = qs('#in_'+inp.k).value;
+      if(inp.k === 'list'){
+        obj[inp.k] = raw; if(parseList(raw).length===0) invalid=true;
+      } else {
+        var num = parseFloat(raw); obj[inp.k]=num; if(isNaN(num)) invalid=true;
+      }
+    });
+    return {def: def, obj: obj, invalid: invalid};
+  }
+  function solveGeneric(){
+    var r = readInputs(); if(r.invalid){ elRes.textContent='Please fill all fields with numbers.'; return; }
+    var out = r.def.solve(r.obj) || {};
+    var keys = Object.keys(out);
+    elRes.textContent = keys.map(function(k){ return k+' = '+ numberFormat(out[k]); }).join('  •  ');
+  }
+  function clearGeneric(){ elInputs.querySelectorAll('input').forEach(function(i){ i.value=''; }); elRes.textContent='—'; }
+
+  function restore(){
+    try{
+      var s = JSON.parse(localStorage.getItem('conv_state')||'null');
+      if(s){ elQty.value=s.qty; refreshUnits(); elFromP.value=s.fromExp; elToP.value=s.toExp; elFromU.value=s.fromUnit; elToU.value=s.toUnit; elVal.value=s.val; }
+    }catch{}
+    updatePrefixInfo();
+    if(elVal.value) convert();
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    // Build UI
+    populateConverter(); buildSITable(); restore();
+
+    // Converter
+    elQty.addEventListener('change', function(){ refreshUnits(); convert(); });
+    [elFromP,elToP,elFromU,elToU].forEach(function(el){ el.addEventListener('change', function(){ updatePrefixInfo(); convert(); }); });
+    elBtn.addEventListener('click', convert);
+    qs('#swapBtn').addEventListener('click', swap);
+    qs('#copyBtn').addEventListener('click', copyOut);
+
+    // Solvers
+    populateSolverCategories();
+    elCat.addEventListener('change', updateFormulaList);
+    elForm.addEventListener('change', buildInputsForSelected);
+    qs('#solveGeneric').addEventListener('click', solveGeneric);
+    qs('#clearGeneric').addEventListener('click', clearGeneric);
+
+    // Collapsible reference card
+    (function attachCollapsible(){ var card=document.getElementById('refCard'); var btn=document.getElementById('refToggle'); if(card&&btn){ btn.addEventListener('click', function(){ card.classList.toggle('collapsed'); }); } })();
+  });
+  </script>
+</body>
+</html>
