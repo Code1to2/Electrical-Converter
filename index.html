@@ -153,6 +153,7 @@
             <tr><td class="mono">Q (reactive)</td><td>Reactive power (var)</td></tr>
             <tr><td class="mono">S</td><td>Apparent power (volt‑ampere, VA)</td></tr>
             <tr><td class="mono">Z</td><td>Impedance (ohm, Ω)</td></tr>
+            <tr><td class=\"mono\">G</td><td>Conductance (siemens, S)</td></tr>
             <tr><td class="mono">X</td><td>Reactance (ohm, Ω) — <span class="mono">X<sub>C</sub></span>, <span class="mono">X<sub>L</sub></span></td></tr>
             <tr><td class="mono">C</td><td>Capacitance (farad, F)</td></tr>
             <tr><td class="mono">L</td><td>Inductance (henry, H)</td></tr>
@@ -178,6 +179,8 @@
             <li>Electrical power: <span class="mono">P = V·I = I²R = V²/R</span></li>
             <li>Mechanical power: <span class="mono">P = W/t</span>, <span class="mono">P = F·v</span></li>
             <li>RMS (sine): <span class="mono">V<sub>rms</sub> = V<sub>p</sub>/√2</span>, <span class="mono">I<sub>rms</sub> = I<sub>p</sub>/√2</span></li>
+          
+            <li>Conductance: <span class="mono">G = 1/R</span>; <span class="mono">I = G·V</span>; <span class="mono">P = V²·G</span></li>
           </ul>
         </details>
         <details>
@@ -344,88 +347,96 @@
 
   // ===== GENERIC SOLVER ENGINE =====
   const CATEGORY_DEFS = {
-    "Ohm's & DC Power": {
-      formulas: {
-        'V = I·R  → solve V': { inputs:[{k:'I',label:'Current I (A)'},{k:'R',label:'Resistance R (Ω)'}], solve: function({I,R}){ return {'V (V)': I*R}; } },
-        'I = V/R  → solve I': { inputs:[{k:'V',label:'Voltage V (V)'},{k:'R',label:'Resistance R (Ω)'}], solve: function({V,R}){ return {'I (A)': V/R}; } },
-        'R = V/I  → solve R': { inputs:[{k:'V',label:'Voltage V (V)'},{k:'I',label:'Current I (A)'}], solve: function({V,I}){ return {'R (Ω)': V/I}; } },
-        'P = V·I  → solve P': { inputs:[{k:'V',label:'Voltage V (V)'},{k:'I',label:'Current I (A)'}], solve: function({V,I}){ return {'P (W)': V*I}; } },
-        'P = V²/R → solve P': { inputs:[{k:'V',label:'Voltage V (V)'},{k:'R',label:'Resistance R (Ω)'}], solve: function({V,R}){ return {'P (W)': V*V/R}; } },
-        'P = I²R  → solve P': { inputs:[{k:'I',label:'Current I (A)'},{k:'R',label:'Resistance R (Ω)'}], solve: function({I,R}){ return {'P (W)': I*I*R}; } }
-      }
-    },
-    'AC Power (PF)': {
-      formulas: {
-        'Single‑phase: P,Q,S from V,I,PF': { inputs:[{k:'V',label:'Voltage V (V)'},{k:'I',label:'Current I (A)'},{k:'PF',label:'Power factor cosφ (0..1)'}], solve: function({V,I,PF}){ var S=V*I; var P=S*PF; var Q=S*Math.sqrt(Math.max(0,1-PF*PF)); var phi=Math.acos(Math.min(1,Math.max(-1,PF)))*180/Math.PI; return {'P (W)':P,'Q (var)':Q,'S (VA)':S,'φ (deg)':phi}; } },
-        'Three‑phase: P,Q,S from V_L,I_L,PF': { inputs:[{k:'VL',label:'Line voltage V_L (V)'},{k:'IL',label:'Line current I_L (A)'},{k:'PF',label:'Power factor cosφ (0..1)'}], solve: function({VL,IL,PF}){ var k=Math.sqrt(3); var S=k*VL*IL; var P=S*PF; var Q=S*Math.sqrt(Math.max(0,1-PF*PF)); var phi=Math.acos(Math.min(1,Math.max(-1,PF)))*180/Math.PI; return {'P (W)':P,'Q (var)':Q,'S (VA)':S,'φ (deg)':phi}; } },
-        'Given S and PF → P,Q,φ': { inputs:[{k:'S',label:'Apparent power S (VA)'},{k:'PF',label:'Power factor cosφ (0..1)'}], solve: function({S,PF}){ var P=S*PF; var Q=Math.sqrt(Math.max(0,S*S-P*P)); var phi=Math.acos(Math.min(1,Math.max(-1,PF)))*180/Math.PI; return {'P (W)':P,'Q (var)':Q,'φ (deg)':phi}; } }
-      }
-    },
-    'Work / Energy / Power': {
-      formulas: {
-        'Force F = m·a → F': { inputs:[{k:'m',label:'Mass m (kg)'},{k:'a',label:'Acceleration a (m/s²)'}], solve: function({m,a}){ return {'F (N)': m*a}; } },
-        'Acceleration a = F/m → a': { inputs:[{k:'F',label:'Force F (N)'},{k:'m',label:'Mass m (kg)'}], solve: function({F,m}){ return {'a (m/s²)': F/m}; } },
-        'Mass m = F/a → m': { inputs:[{k:'F',label:'Force F (N)'},{k:'a',label:'Acceleration a (m/s²)'}], solve: function({F,a}){ return {'m (kg)': F/a}; } },
-        'Work W = F·d': { inputs:[{k:'F',label:'Force F (N)'},{k:'d',label:'Distance d (m)'}], solve: function({F,d}){ return {'W (J)': F*d}; } },
-        'Power P = W/t': { inputs:[{k:'W',label:'Work/Energy W (J)'},{k:'t',label:'Time t (s)'}], solve: function({W,t}){ return {'P (W)': W/t}; } },
-        'Power P = F·v': { inputs:[{k:'F',label:'Force F (N)'},{k:'v',label:'Velocity v (m/s)'}], solve: function({F,v}){ return {'P (W)': F*v}; } },
-        'Potential Energy PE = m·g·h': { inputs:[{k:'m',label:'Mass m (kg)'},{k:'g',label:'g (m/s²)'},{k:'h',label:'Height h (m)'}], solve: function({m,g,h}){ return {'PE (J)': m*g*h}; } },
-        'Kinetic Energy KE = ½·m·v²': { inputs:[{k:'m',label:'Mass m (kg)'},{k:'v',label:'Velocity v (m/s)'}], solve: function({m,v}){ return {'KE (J)': 0.5*m*v*v}; } },
-        'Strain Energy E = ½·k·x²': { inputs:[{k:'k',label:'Spring constant k (N/m)'},{k:'x',label:'Displacement x (m)'}], solve: function({k,x}){ return {'E (J)': 0.5*k*x*x}; } }
-      }
-    },
-    'Energy Storage': {
-      formulas: {
-        'Capacitor: E = ½ C V²': { inputs:[{k:'C',label:'Capacitance C (F)'},{k:'V',label:'Voltage V (V)'}], solve: function({C,V}){ return {'E (J)': 0.5*C*V*V}; } },
-        'Inductor: E = ½ L I²': { inputs:[{k:'L',label:'Inductance L (H)'},{k:'I',label:'Current I (A)'}], solve: function({L,I}){ return {'E (J)': 0.5*L*I*I}; } }
-      }
-    },
-    'Reactance / Z / Phase': {
-      formulas: {
-        'Xc = 1/(2π f C)': { inputs:[{k:'f',label:'Frequency f (Hz)'},{k:'C',label:'Capacitance C (F)'}], solve: function({f,C}){ return {'Xc (Ω)': 1/(2*Math.PI*f*C)}; } },
-        'Xl = 2π f L': { inputs:[{k:'f',label:'Frequency f (Hz)'},{k:'L',label:'Inductance L (H)'}], solve: function({f,L}){ return {'Xl (Ω)': 2*Math.PI*f*L}; } },
-        '|Z| & φ from R and X': { inputs:[{k:'R',label:'Resistance R (Ω)'},{k:'X',label:'Reactance X (Ω)'}], solve: function({R,X}){ return {'|Z| (Ω)': Math.sqrt(R*R+X*X), 'φ (deg)': (Math.atan2(X,R)*180/Math.PI)}; } }
-      }
-    },
-    'Filters & Freq': {
-      formulas: {
-        'RC cutoff f_c = 1/(2πRC)': { inputs:[{k:'R',label:'R (Ω)'},{k:'C',label:'C (F)'}], solve: function({R,C}){ return {'f_c (Hz)': 1/(2*Math.PI*R*C)}; } },
-        'RL cutoff f_c = R/(2πL)': { inputs:[{k:'R',label:'R (Ω)'},{k:'L',label:'L (H)'}], solve: function({R,L}){ return {'f_c (Hz)': R/(2*Math.PI*L)}; } },
-        'Twin‑T notch f_N = 1/(4πRC)': { inputs:[{k:'R',label:'R (Ω)'},{k:'C',label:'C (F)'}], solve: function({R,C}){ return {'f_N (Hz)': 1/(4*Math.PI*R*C)}; } },
-        'ω = 2π f': { inputs:[{k:'f',label:'Frequency f (Hz)'}], solve: function({f}){ return {'ω (rad/s)': 2*Math.PI*f}; } },
-        'f = ω/(2π)': { inputs:[{k:'w',label:'Angular frequency ω (rad/s)'}], solve: function({w}){ return {'f (Hz)': w/(2*Math.PI)}; } }
-      }
-    },
-    'Series / Parallel (R,C,L)': {
-      formulas: {
-        'R_series = Σ R_i': { inputs:[{k:'list',label:'R values (Ω), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); return {'R_eq (Ω)': arr.reduce(function(a,b){return a+b;},0)}; } },
-        'R_parallel = (Σ 1/R_i)⁻¹': { inputs:[{k:'list',label:'R values (Ω), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); var inv=arr.reduce(function(a,b){return a+1/b;},0); return {'R_eq (Ω)': 1/inv}; } },
-        'C_series = (Σ 1/C_i)⁻¹': { inputs:[{k:'list',label:'C values (F), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); var inv=arr.reduce(function(a,b){return a+1/b;},0); return {'C_eq (F)': 1/inv}; } },
-        'C_parallel = Σ C_i': { inputs:[{k:'list',label:'C values (F), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); return {'C_eq (F)': arr.reduce(function(a,b){return a+b;},0)}; } },
-        'L_series = Σ L_i': { inputs:[{k:'list',label:'L values (H), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); return {'L_eq (H)': arr.reduce(function(a,b){return a+b;},0)}; } },
-        'L_parallel = (Σ 1/L_i)⁻¹': { inputs:[{k:'list',label:'L values (H), comma/space/; separated'}], solve: function({list}){ var arr=parseList(list); var inv=arr.reduce(function(a,b){return a+1/b;},0); return {'L_eq (H)': 1/inv}; } }
-      }
-    },
-    'Charge (Coulombs)': {
-      formulas: {
-        'Q = I·t': { inputs:[{k:'I',label:'Current I (A)'},{k:'t',label:'Time t (s)'}], solve: function({I,t}){ return {'Q (C)': I*t}; } },
-        'Electrons n = Q/e': { inputs:[{k:'Q',label:'Charge Q (C)'}], solve: function({Q}){ var e=1.602e-19; return {'n (electrons)': Q/e}; } },
-        'Q from n: Q = n·e': { inputs:[{k:'n',label:'Electrons n (count)'}], solve: function({n}){ var e=1.602e-19; return {'Q (C)': n*e}; } }
-      }
-    },
-    'RF Power (dBm ↔ W)': {
-      formulas: {
-        'P(W) from dBm': { inputs:[{k:'dBm',label:'Power (dBm)'}], solve: function({dBm}){ return {'P (W)': Math.pow(10,(dBm-30)/10)}; } },
-        'dBm from P(W)': { inputs:[{k:'P',label:'Power P (W)'}], solve: function({P}){ return {'P (dBm)': 10*Math.log10(P)+30}; } }
-      }
-    },
-    'Energy & Cost (kWh)': {
-      formulas: {
-        'From P(W), hours, tariff, qty': { inputs:[{k:'P',label:'Power per device (W)'},{k:'h',label:'Hours of use (h)'},{k:'tariff',label:'Tariff (per kWh)'},{k:'qty',label:'Quantity'}], solve: function({P,h,tariff,qty}){ var kWh=(P*h*qty)/1000; var cost=kWh*tariff; return {'Energy (kWh)':kWh,'Cost':cost}; } },
-        'From P(kW), hours, tariff, qty': { inputs:[{k:'PkW',label:'Power per device (kW)'},{k:'h',label:'Hours of use (h)'},{k:'tariff',label:'Tariff (per kWh)'},{k:'qty',label:'Quantity'}], solve: function({PkW,h,tariff,qty}){ var kWh=(PkW*h*qty); var cost=kWh*tariff; return {'Energy (kWh)':kWh,'Cost':cost}; } }
-      }
+  "Ohm's & DC Power": {
+    formulas: {
+      "V = I·R  → solve V": { inputs:[{k:"I",label:"Current I (A)"},{k:"R",label:"Resistance R (Ω)"}], solve: function({I,R}){ return {"V (V)": I*R}; } },
+      "I = V/R  → solve I": { inputs:[{k:"V",label:"Voltage V (V)"},{k:"R",label:"Resistance R (Ω)"}], solve: function({V,R}){ return {"I (A)": V/R}; } },
+      "R = V/I  → solve R": { inputs:[{k:"V",label:"Voltage V (V)"},{k:"I",label:"Current I (A)"}], solve: function({V,I}){ return {"R (Ω)": V/I}; } },
+      "P = V·I  → solve P": { inputs:[{k:"V",label:"Voltage V (V)"},{k:"I",label:"Current I (A)"}], solve: function({V,I}){ return {"P (W)": V*I}; } },
+      "P = V²/R → solve P": { inputs:[{k:"V",label:"Voltage V (V)"},{k:"R",label:"Resistance R (Ω)"}], solve: function({V,R}){ return {"P (W)": V*V/R}; } },
+      "P = I²R  → solve P": { inputs:[{k:"I",label:"Current I (A)"},{k:"R",label:"Resistance R (Ω)"}], solve: function({I,R}){ return {"P (W)": I*I*R}; } }
     }
-  };
+  },
+  "AC Power (PF)": {
+    formulas: {
+      "Single‑phase: P,Q,S from V,I,PF": { inputs:[{k:"V",label:"Voltage V (V)"},{k:"I",label:"Current I (A)"},{k:"PF",label:"Power factor cosφ (0..1)"}], solve: function({V,I,PF}){ var S=V*I; var P=S*PF; var Q=S*Math.sqrt(Math.max(0,1-PF*PF)); var phi=Math.acos(Math.min(1,Math.max(-1,PF)))*180/Math.PI; return {"P (W)":P,"Q (var)":Q,"S (VA)":S,"φ (deg)":phi}; } },
+      "Three‑phase: P,Q,S from V_L,I_L,PF": { inputs:[{k:"VL",label:"Line voltage V_L (V)"},{k:"IL",label:"Line current I_L (A)"},{k:"PF",label:"Power factor cosφ (0..1)"}], solve: function({VL,IL,PF}){ var k=Math.sqrt(3); var S=k*VL*IL; var P=S*PF; var Q=S*Math.sqrt(Math.max(0,1-PF*PF)); var phi=Math.acos(Math.min(1,Math.max(-1,PF)))*180/Math.PI; return {"P (W)":P,"Q (var)":Q,"S (VA)":S,"φ (deg)":phi}; } },
+      "Given S and PF → P,Q,φ": { inputs:[{k:"S",label:"Apparent power S (VA)"},{k:"PF",label:"Power factor cosφ (0..1)"}], solve: function({S,PF}){ var P=S*PF; var Q=Math.sqrt(Math.max(0,S*S-P*P)); var phi=Math.acos(Math.min(1,Math.max(-1,PF)))*180/Math.PI; return {"P (W)":P,"Q (var)":Q,"φ (deg)":phi}; } }
+    }
+  },
+  "Work / Energy / Power": {
+    formulas: {
+      "Force F = m·a → F": { inputs:[{k:"m",label:"Mass m (kg)"},{k:"a",label:"Acceleration a (m/s²)"}], solve: function({m,a}){ return {"F (N)": m*a}; } },
+      "Acceleration a = F/m → a": { inputs:[{k:"F",label:"Force F (N)"},{k:"m",label:"Mass m (kg)"}], solve: function({F,m}){ return {"a (m/s²)": F/m}; } },
+      "Mass m = F/a → m": { inputs:[{k:"F",label:"Force F (N)"},{k:"a",label:"Acceleration a (m/s²)"}], solve: function({F,a}){ return {"m (kg)": F/a}; } },
+      "Work W = F·d": { inputs:[{k:"F",label:"Force F (N)"},{k:"d",label:"Distance d (m)"}], solve: function({F,d}){ return {"W (J)": F*d}; } },
+      "Power P = W/t": { inputs:[{k:"W",label:"Work/Energy W (J)"},{k:"t",label:"Time t (s)"}], solve: function({W,t}){ return {"P (W)": W/t}; } },
+      "Power P = F·v": { inputs:[{k:"F",label:"Force F (N)"},{k:"v",label:"Velocity v (m/s)"}], solve: function({F,v}){ return {"P (W)": F*v}; } },
+      "Potential Energy PE = m·g·h": { inputs:[{k:"m",label:"Mass m (kg)"},{k:"g",label:"g (m/s²)"},{k:"h",label:"Height h (m)"}], solve: function({m,g,h}){ return {"PE (J)": m*g*h}; } },
+      "Kinetic Energy KE = ½·m·v²": { inputs:[{k:"m",label:"Mass m (kg)"},{k:"v",label:"Velocity v (m/s)"}], solve: function({m,v}){ return {"KE (J)": 0.5*m*v*v}; } },
+      "Strain Energy E = ½·k·x²": { inputs:[{k:"k",label:"Spring constant k (N/m)"},{k:"x",label:"Displacement x (m)"}], solve: function({k,x}){ return {"E (J)": 0.5*k*x*x}; } }
+    }
+  },
+  "Energy Storage": {
+    formulas: {
+      "Capacitor: E = ½ C V²": { inputs:[{k:"C",label:"Capacitance C (F)"},{k:"V",label:"Voltage V (V)"}], solve: function({C,V}){ return {"E (J)": 0.5*C*V*V}; } },
+      "Inductor: E = ½ L I²": { inputs:[{k:"L",label:"Inductance L (H)"},{k:"I",label:"Current I (A)"}], solve: function({L,I}){ return {"E (J)": 0.5*L*I*I}; } }
+    }
+  },
+  "Reactance / Z / Phase": {
+    formulas: {
+      "Xc = 1/(2π f C)": { inputs:[{k:"f",label:"Frequency f (Hz)"},{k:"C",label:"Capacitance C (F)"}], solve: function({f,C}){ return {"Xc (Ω)": 1/(2*Math.PI*f*C)}; } },
+      "Xl = 2π f L": { inputs:[{k:"f",label:"Frequency f (Hz)"},{k:"L",label:"Inductance L (H)"}], solve: function({f,L}){ return {"Xl (Ω)": 2*Math.PI*f*L}; } },
+      "|Z| & φ from R and X": { inputs:[{k:"R",label:"Resistance R (Ω)"},{k:"X",label:"Reactance X (Ω)"}], solve: function({R,X}){ return {"|Z| (Ω)": Math.sqrt(R*R+X*X), "φ (deg)": (Math.atan2(X,R)*180/Math.PI)}; } }
+    }
+  },
+  "Filters & Freq": {
+    formulas: {
+      "RC cutoff f_c = 1/(2πRC)": { inputs:[{k:"R",label:"R (Ω)"},{k:"C",label:"C (F)"}], solve: function({R,C}){ return {"f_c (Hz)": 1/(2*Math.PI*R*C)}; } },
+      "RL cutoff f_c = R/(2πL)": { inputs:[{k:"R",label:"R (Ω)"},{k:"L",label:"L (H)"}], solve: function({R,L}){ return {"f_c (Hz)": R/(2*Math.PI*L)}; } },
+      "Twin‑T notch f_N = 1/(4πRC)": { inputs:[{k:"R",label:"R (Ω)"},{k:"C",label:"C (F)"}], solve: function({R,C}){ return {"f_N (Hz)": 1/(4*Math.PI*R*C)}; } },
+      "ω = 2π f": { inputs:[{k:"f",label:"Frequency f (Hz)"}], solve: function({f}){ return {"ω (rad/s)": 2*Math.PI*f}; } },
+      "f = ω/(2π)": { inputs:[{k:"w",label:"Angular frequency ω (rad/s)"}], solve: function({w}){ return {"f (Hz)": w/(2*Math.PI)}; } }
+    }
+  },
+  "Series / Parallel (R,C,L)": {
+    formulas: {
+      "R_series = Σ R_i": { inputs:[{k:"list",label:"R values (Ω), comma/space/; separated"}], solve: function({list}){ var arr=parseList(list); return {"R_eq (Ω)": arr.reduce(function(a,b){return a+b;},0)}; } },
+      "R_parallel = (Σ 1/R_i)⁻¹": { inputs:[{k:"list",label:"R values (Ω), comma/space/; separated"}], solve: function({list}){ var arr=parseList(list); var inv=arr.reduce(function(a,b){return a+1/b;},0); return {"R_eq (Ω)": 1/inv}; } },
+      "C_series = (Σ 1/C_i)⁻¹": { inputs:[{k:"list",label:"C values (F), comma/space/; separated"}], solve: function({list}){ var arr=parseList(list); var inv=arr.reduce(function(a,b){return a+1/b;},0); return {"C_eq (F)": 1/inv}; } },
+      "C_parallel = Σ C_i": { inputs:[{k:"list",label:"C values (F), comma/space/; separated"}], solve: function({list}){ var arr=parseList(list); return {"C_eq (F)": arr.reduce(function(a,b){return a+b;},0)}; } },
+      "L_series = Σ L_i": { inputs:[{k:"list",label:"L values (H), comma/space/; separated"}], solve: function({list}){ var arr=parseList(list); return {"L_eq (H)": arr.reduce(function(a,b){return a+b;},0)}; } },
+      "L_parallel = (Σ 1/L_i)⁻¹": { inputs:[{k:"list",label:"L values (H), comma/space/; separated"}], solve: function({list}){ var arr=parseList(list); var inv=arr.reduce(function(a,b){return a+1/b;},0); return {"L_eq (H)": 1/inv}; } }
+    }
+  },
+  "Charge (Coulombs)": {
+    formulas: {
+      "Q = I·t": { inputs:[{k:"I",label:"Current I (A)"},{k:"t",label:"Time t (s)"}], solve: function({I,t}){ return {"Q (C)": I*t}; } },
+      "Electrons n = Q/e": { inputs:[{k:"Q",label:"Charge Q (C)"}], solve: function({Q}){ var e=1.602e-19; return {"n (electrons)": Q/e}; } },
+      "Q from n: Q = n·e": { inputs:[{k:"n",label:"Electrons n (count)"}], solve: function({n}){ var e=1.602e-19; return {"Q (C)": n*e}; } }
+    }
+  },
+  "Conductance (G)": {
+    formulas: {
+      "G = 1/R → solve G": { inputs:[{k:"R",label:"Resistance R (Ω)"}], solve: function({R}){ return {"G (S)": 1/R}; } },
+      "R = 1/G → solve R": { inputs:[{k:"G",label:"Conductance G (S)"}], solve: function({G}){ return {"R (Ω)": 1/G}; } },
+      "I = G·V → solve I": { inputs:[{k:"G",label:"Conductance G (S)"},{k:"V",label:"Voltage V (V)"}], solve: function({G,V}){ return {"I (A)": G*V}; } },
+      "P = V²·G → solve P": { inputs:[{k:"V",label:"Voltage V (V)"},{k:"G",label:"Conductance G (S)"}], solve: function({V,G}){ return {"P (W)": V*V*G}; } }
+    }
+  },
+  "RF Power (dBm ↔ W)": {
+    formulas: {
+      "P(W) from dBm": { inputs:[{k:"dBm",label:"Power (dBm)"}], solve: function({dBm}){ return {"P (W)": Math.pow(10,(dBm-30)/10)}; } },
+      "dBm from P(W)": { inputs:[{k:"P",label:"Power P (W)"}], solve: function({P}){ return {"P (dBm)": 10*Math.log10(P)+30}; } }
+    }
+  },
+  "Energy & Cost (kWh)": {
+    formulas: {
+      "From P(W), hours, tariff, qty": { inputs:[{k:"P",label:"Power per device (W)"},{k:"h",label:"Hours of use (h)"},{k:"tariff",label:"Tariff (per kWh)"},{k:"qty",label:"Quantity"}], solve: function({P,h,tariff,qty}){ var kWh=(P*h*qty)/1000; var cost=kWh*tariff; return {"Energy (kWh)":kWh,"Cost":cost}; } },
+      "From P(kW), hours, tariff, qty": { inputs:[{k:"PkW",label:"Power per device (kW)"},{k:"h",label:"Hours of use (h)"},{k:"tariff",label:"Tariff (per kWh)"},{k:"qty",label:"Quantity"}], solve: function({PkW,h,tariff,qty}){ var kWh=(PkW*h*qty); var cost=kWh*tariff; return {"Energy (kWh)":kWh,"Cost":cost}; } }
+    }
+  }
+};
 
   function parseList(str){
     if(!str) return [];
